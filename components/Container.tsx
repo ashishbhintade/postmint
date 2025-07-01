@@ -13,7 +13,7 @@ const Container = ({
 }: Props) => {
   return (
     <div
-      className={`container w-1/2 ${
+      className={`container max-w-1/2 ${
         noPadding ? "px-0 lg:px-6" : "px-6"
       } mx-auto ${customClass} ${className}`}
     >
