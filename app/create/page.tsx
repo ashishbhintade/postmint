@@ -1,3 +1,5 @@
+import CreatePost from "@/components/CreatePost";
+
 export default function Create() {
-  return "Create Post";
+  return <CreatePost />;
 }

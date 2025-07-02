@@ -7,7 +7,7 @@ import { useWalletConnection } from "@/hooks/useWalletConnection";
 export default function Header() {
   const { account } = useWalletConnection();
 
-  const navItems = [{ href: "/create", label: "Make a Post" }];
+  const navItems = [{ href: "/create", label: "Create Post" }];
 
   return (
     // <div className="mx-auto top-0 z-50 h-16 flex items-center justify-between">
