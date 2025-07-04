@@ -15,6 +15,24 @@ export function useWalletConnection() {
   const [client, setClient] = useState<WalletClient | undefined>();
   const [publicClient, setPublicClient] = useState<PublicClient | undefined>();
 
+  const baseSepolia = {
+    id: 84532,
+    name: "Base Sepolia",
+    network: "base-sepolia",
+    nativeCurrency: {
+      name: "Base Sepolia ETH",
+      symbol: "ETH",
+      decimals: 18,
+    },
+    rpcUrls: {
+      default: { http: ["https://sepolia.base.org"] },
+      public: { http: ["https://sepolia.base.org"] },
+    },
+    blockExplorers: {
+      default: { name: "Basescan", url: "https://sepolia.basescan.org" },
+    },
+  };
+
   const isConnected = Boolean(account && client);
 
   useEffect(() => {
@@ -29,10 +47,13 @@ export function useWalletConnection() {
           const saved = accounts[0] as Address;
           setAccount(saved);
           setClient(
-            createWalletClient({ chain: sepolia, transport: custom(ethereum) })
+            createWalletClient({
+              chain: baseSepolia,
+              transport: custom(ethereum),
+            })
           );
           setPublicClient(
-            createPublicClient({ chain: sepolia, transport: http() })
+            createPublicClient({ chain: baseSepolia, transport: http() })
           );
           localStorage.setItem("walletAccount", saved);
         } else {
@@ -53,10 +74,13 @@ export function useWalletConnection() {
         const account = accounts[0] as Address;
         setAccount(account);
         setClient(
-          createWalletClient({ chain: sepolia, transport: custom(ethereum) })
+          createWalletClient({
+            chain: baseSepolia,
+            transport: custom(ethereum),
+          })
         );
         setPublicClient(
-          createPublicClient({ chain: sepolia, transport: http() })
+          createPublicClient({ chain: baseSepolia, transport: http() })
         );
         localStorage.setItem("walletAccount", account);
       }

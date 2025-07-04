@@ -6,34 +6,127 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useWalletConnection } from "@/hooks/useWalletConnection";
+import {
+  createCoin,
+  DeployCurrency,
+  ValidMetadataURI,
+} from "@zoralabs/coins-sdk";
+import { baseSepolia } from "viem/chains";
+import { acronymFirst10Words } from "@/lib/utils";
+import {
+  createWalletClient,
+  createPublicClient,
+  http,
+  Hex,
+  Address,
+  custom,
+} from "viem";
 
 export default function CreatePost() {
   const [title, setTitle] = useState("");
   const [html, setHtml] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { account } = useWalletConnection();
+
+  const ethereum = (window as any).ethereum;
 
   function handleEditorChange(e: any) {
     setHtml(e.target.value);
   }
 
-  function handleCreate() {
-    const postData = {
-      title,
-      article: html,
-    };
-    console.log(postData);
+  async function handleCreate() {
+    setLoading(true);
+    const publicClient = createPublicClient({
+      chain: baseSepolia,
+      transport: custom(ethereum),
+    });
+
+    const walletClient = createWalletClient({
+      account: account as Hex,
+      chain: baseSepolia,
+      transport: custom(ethereum),
+    });
+    try {
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, article: html }),
+      });
+
+      // console.log("Request is done in create post");
+
+      const uploadJson = await uploadRes.json();
+
+      if (!uploadRes.ok || !uploadJson.ipfsUrl) {
+        throw new Error(uploadJson.error || "Upload failed");
+      }
+
+      const uri = uploadJson.ipfsUrl as ValidMetadataURI;
+
+      console.log("The uri was found", uri);
+
+      const symbol = acronymFirst10Words(title) || "SYM";
+
+      const coinParams = {
+        name: title || "Untitled",
+        symbol,
+        uri,
+        payoutRecipient: account as Address,
+        platformReferrer: account as Address,
+        chainId: baseSepolia.id,
+        currency: DeployCurrency.ETH,
+      };
+
+      const result = await createCoin(coinParams, walletClient, publicClient, {
+        gasMultiplier: 120,
+      });
+
+      console.log("✅ Coin Created:", result);
+
+      if (result.deployment) {
+        const { caller, uri } = result.deployment;
+        console.log("Caller Address in CreatePost : ", caller);
+        console.log("URI in CreatePost : ", uri);
+        try {
+          const res = await fetch("/api/coin-details", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ caller, uri }),
+          });
+
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`Coin details post failed: ${errorText}`);
+          }
+
+          console.log("📝 Coin details saved successfully");
+        } catch (error) {
+          console.error("❌ Error saving coin details:", error);
+        }
+      }
+      alert(`Coin Created!\nTx Hash: ${result.hash}`);
+    } catch (err: any) {
+      console.error("❌ Error:", err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="max-w-7xl mx-auto p-4 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Create Post</h1>
-        <Button className="cursor-pointer" onClick={handleCreate}>
-          Create
+        <Button
+          className="cursor-pointer"
+          onClick={handleCreate}
+          disabled={loading}
+        >
+          {loading ? "Creating..." : "Create"}
         </Button>
       </div>
 
-      {/* Post Title Input */}
       <div className="space-y-2">
         <Label htmlFor="post-title">Post Title</Label>
         <Input
@@ -44,10 +137,8 @@ export default function CreatePost() {
         />
       </div>
 
-      {/* WYSIWYG Editor */}
       <Editor value={html} onChange={handleEditorChange} />
 
-      {/* Preview Section */}
       <Card>
         <CardHeader>
           <CardTitle>Preview</CardTitle>
