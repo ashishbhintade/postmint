@@ -13,8 +13,9 @@ export default async function PostPage({
 }: {
   params: { cid: string };
 }) {
+  const { cid } = await params;
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/post?cid=${params.cid}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/post?cid=${cid}`,
     {
       cache: "no-store",
     }
