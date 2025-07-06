@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Editor from "react-simple-wysiwyg";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,17 +18,18 @@ import { acronymFirst10Words } from "@/lib/utils";
 import {
   createWalletClient,
   createPublicClient,
-  http,
   Hex,
   Address,
   custom,
 } from "viem";
+import { toast } from "sonner";
 
 export default function CreatePost() {
   const [title, setTitle] = useState("");
   const [html, setHtml] = useState("");
   const [loading, setLoading] = useState(false);
   const { account } = useWalletConnection();
+  const router = useRouter();
 
   const ethereum = (window as any).ethereum;
 
@@ -102,12 +104,13 @@ export default function CreatePost() {
 
           console.log("📝 Coin details saved successfully");
         } catch (error) {
-          console.error("❌ Error saving coin details:", error);
+          console.error("Error saving coin details:", error);
         }
       }
-      alert(`Coin Created!\nTx Hash: ${result.hash}`);
+      toast.success("Your post was created successfully");
+      router.push("/");
     } catch (err: any) {
-      console.error("❌ Error:", err);
+      console.error("Error:", err);
       alert(`Error: ${err.message}`);
     } finally {
       setLoading(false);
