@@ -47,7 +47,10 @@ export default function Posts() {
             >
               <div className="flex items-center space-x-3">
                 <span className="font-semibold text-gray-500 text-sm">
-                  By {post.user?.slice(0, 5)}...{post.user?.slice(-5)}
+                  By{" "}
+                  {post.user
+                    ? `${post.user.slice(0, 5)}...${post.user.slice(-5)}`
+                    : "0x3fb...0370d"}
                 </span>
               </div>
 
