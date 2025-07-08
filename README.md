@@ -4,6 +4,8 @@
 
 ![Image of UI](./public/ui.png)
 
+> You can check the code for backend here - [https://github.com/ashishbhintade/postmint-backend](https://github.com/ashishbhintade/postmint-backend)
+
 ## 🛠 Tech Stack Used
 
 - **Next.js** : Frontend framework
